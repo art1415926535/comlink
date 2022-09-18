@@ -1,3 +1,4 @@
+import json
 from typing import Any
 
 from comlink.queue import SqsQueue
@@ -49,3 +50,25 @@ async def test_sqs_queue_remove_data(
         wait_time_seconds=1,
     )
     assert not messages
+
+
+async def test_sqs_queue_serialization(
+    sqs_client: Any, sqs_queue_url: str
+) -> None:
+    """Test that we can serialize data before putting it into the queue."""
+    queue: SqsQueue[dict] = SqsQueue(
+        url=sqs_queue_url,
+        client=sqs_client,
+        serializer=json.dumps,
+        deserializer=json.loads,
+    )
+
+    response = await queue.put({"key": ["value"]})
+    assert response["ResponseMetadata"]["HTTPStatusCode"] == 200
+
+    messages = await queue.take(
+        max_messages=1,
+        visibility_timeout=1,
+        wait_time_seconds=1,
+    )
+    assert messages[0]["Body"] == {"key": ["value"]}
