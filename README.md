@@ -7,6 +7,11 @@ Send and receive messages by using SQS queues.
 ### Example
 
 ```python
+import asyncio
+import datetime
+from comlink import SqsConsumer, SqsQueue
+
+
 async def example(sqs_client, queue_url):
     # Create a queue object
     sqs_queue = SqsQueue(url=queue_url, client=sqs_client)
