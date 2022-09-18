@@ -1,4 +1,5 @@
 import asyncio
+import inspect
 import logging
 from asyncio import Task
 from typing import Any, Callable
@@ -90,7 +91,11 @@ class SqsConsumer:
                 await self.queue.remove(message["ReceiptHandle"])
 
     async def _handle(self, message: Any) -> None:
-        if asyncio.iscoroutine(self.handler):
+        h = self.handler
+        if hasattr(h, "__call__"):
+            h = h.__call__
+
+        if asyncio.iscoroutinefunction(h):
             await self.handler(message)
         else:
-            self.handler(message)
+            await asyncio.to_thread(self.handler(message))

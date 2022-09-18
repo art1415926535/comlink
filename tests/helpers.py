@@ -42,6 +42,13 @@ class Handler:
             self.handled.set()
 
 
+class AsyncHandler(Handler):
+    async def __call__(self, msg: Any) -> None:
+        self.received_messages.append(msg)
+        if self.handled is not None:
+            self.handled.set()
+
+
 class BrokenHandler(Handler):
     def __call__(self, msg: Any) -> None:
         self.received_messages.append(msg)
