@@ -3,6 +3,32 @@
 Send and receive messages by using SQS queues.
 
 
+## Docs
+### Example
+
+```python
+async def example(sqs_client, queue_url):
+    # Create a queue object
+    sqs_queue = SqsQueue(url=queue_url, client=sqs_client)
+
+    # Event for stopping the consumer
+    stop_event = asyncio.Event()
+    # Create a consumer with a handler that just prints the message
+    consumer = SqsConsumer(queue=sqs_queue, handler=print)
+    # Start the consumer
+    consumer_task = await consumer.start(stop_event=stop_event)
+
+    # Send a message to the queue
+    await sqs_queue.put(f"{datetime.datetime.now()} Hello, world!")
+    # Wait for 1 second for the message to be processed
+    await asyncio.sleep(1)
+
+    # Stop the consumer
+    stop_event.set()
+    # Wait for the consumer to stop
+    await consumer_task
+```
+
 ## Development
 
 ### Setup
