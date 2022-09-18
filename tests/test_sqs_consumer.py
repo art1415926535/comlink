@@ -11,7 +11,7 @@ async def test_sqs_consumer_without_messages(sqs_queue: SqsQueue):
     handler = helpers.Handler(stop_event)
 
     consumer = SqsConsumer(queue=sqs_queue, handler=handler, batch_size=1)
-    consumer_task = await consumer.start_consume(stop_event=stop_event)
+    consumer_task = await consumer.start(stop_event=stop_event)
     await helpers.wait_first_else_cancel(stop_event.wait(), timeout=1)
 
     stop_event.set()
@@ -26,13 +26,13 @@ async def test_sqs_consumer_with_messages(sqs_queue: SqsQueue):
     await sqs_queue.put("test")
 
     consumer = SqsConsumer(queue=sqs_queue, handler=handler, batch_size=1)
-    consumer_task = await consumer.start_consume(stop_event=stop_event)
+    consumer_task = await consumer.start(stop_event=stop_event)
     await helpers.wait_first_else_cancel(stop_event.wait(), timeout=1)
 
     stop_event.set()
     await consumer_task
     assert handler.received_messages
-    assert handler.received_messages[0]["Body"] == "test"
+    assert handler.received_messages[0] == "test"
 
 
 async def test_sqs_async_handler(sqs_queue: SqsQueue):
@@ -42,13 +42,13 @@ async def test_sqs_async_handler(sqs_queue: SqsQueue):
     await sqs_queue.put("test")
 
     consumer = SqsConsumer(queue=sqs_queue, handler=handler, batch_size=1)
-    consumer_task = await consumer.start_consume(stop_event=stop_event)
+    consumer_task = await consumer.start(stop_event=stop_event)
     await helpers.wait_first_else_cancel(stop_event.wait(), timeout=1)
 
     stop_event.set()
     await consumer_task
     assert handler.received_messages
-    assert handler.received_messages[0]["Body"] == "test"
+    assert handler.received_messages[0] == "test"
 
 
 async def test_sqs_consumer_remove_handled_message(sqs_queue: SqsQueue):
@@ -58,7 +58,7 @@ async def test_sqs_consumer_remove_handled_message(sqs_queue: SqsQueue):
     await sqs_queue.put("test")
 
     consumer = SqsConsumer(queue=sqs_queue, handler=handler, batch_size=1)
-    consumer_task = await consumer.start_consume(stop_event=stop_event)
+    consumer_task = await consumer.start(stop_event=stop_event)
     await helpers.wait_first_else_cancel(stop_event.wait(), timeout=1)
     stop_event.set()
     await consumer_task
@@ -78,7 +78,7 @@ async def test_sqs_consumer_left_not_handled_messages(sqs_queue: SqsQueue):
     consumer = SqsConsumer(
         queue=sqs_queue, handler=handler, batch_size=1, visibility_timeout=1
     )
-    consumer_task = await consumer.start_consume(stop_event=stop_event)
+    consumer_task = await consumer.start(stop_event=stop_event)
     await helpers.wait_first_else_cancel(stop_event.wait(), timeout=1)
     stop_event.set()
     await consumer_task

@@ -36,7 +36,7 @@ class SqsConsumer:
         self.visibility_timeout = visibility_timeout
         self.wait_time_seconds = wait_time_seconds
 
-    async def start_consume(self, stop_event: asyncio.Event) -> Task:
+    async def start(self, stop_event: asyncio.Event) -> Task:
         task = asyncio.create_task(self._handler_loop(stop_event))
         log.debug("Handler loop task created")
 
@@ -83,7 +83,7 @@ class SqsConsumer:
                     break
 
                 try:
-                    await self._handle(message)
+                    await self._handle(message["Body"])
                 except Exception as e:
                     log.exception("Message handler error", exc_info=e)
                     continue
@@ -98,4 +98,4 @@ class SqsConsumer:
         if asyncio.iscoroutinefunction(h):
             await self.handler(message)
         else:
-            await asyncio.to_thread(self.handler(message))
+            await asyncio.to_thread(self.handler, message)
