@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from asyncio import Task
-from typing import Any, Callable, Coroutine
+from typing import Any, Callable, Coroutine, Generic, TypeVar
 
 from .queue import SqsQueue
 
@@ -9,11 +9,15 @@ from .queue import SqsQueue
 log = logging.getLogger(__name__)
 
 
-class SqsConsumer:
+MessageType = TypeVar("MessageType")
+
+
+class SqsConsumer(Generic[MessageType]):
     def __init__(
         self,
         queue: SqsQueue,
         handler: Callable,
+        parser: Callable[[str], MessageType] | None = None,
         batch_size: int = 1,
         visibility_timeout: int = 120,
         wait_time_seconds: int = 20,
@@ -30,12 +34,15 @@ class SqsConsumer:
         """
         self.queue = queue
         self.handler = handler
+        self.parser = parser
 
         self.batch_size = batch_size
         self.visibility_timeout = visibility_timeout
         self.wait_time_seconds = wait_time_seconds
 
-        self._handle: Callable[[Any], Coroutine] = self._get_handler_func()
+        self._handle: Callable[
+            [str | MessageType], Coroutine
+        ] = self._get_handler_func()
 
     def _get_handler_func(self) -> Callable[[Any], Coroutine]:
         real_handler = self.handler
@@ -94,15 +101,18 @@ class SqsConsumer:
                     break
 
                 try:
-                    await self._handle(message["Body"])
+                    data = message["Body"]
+                    if self.parser is not None:
+                        data = self.parser(data)
+                    await self._handle(data)
                 except Exception as e:
                     log.exception("Message handler error", exc_info=e)
                     continue
 
                 await self.queue.remove(message["ReceiptHandle"])
 
-    async def _handle_async(self, message: Any) -> None:
+    async def _handle_async(self, message: str | MessageType) -> None:
         await self.handler(message)
 
-    async def _handle_sync(self, message: Any) -> None:
+    async def _handle_sync(self, message: str | MessageType) -> None:
         await asyncio.to_thread(self.handler, message)
