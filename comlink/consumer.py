@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from asyncio import Task
-from typing import Any, Callable
+from typing import Any, Callable, Coroutine
 
 from .queue import SqsQueue
 
@@ -34,6 +34,18 @@ class SqsConsumer:
         self.batch_size = batch_size
         self.visibility_timeout = visibility_timeout
         self.wait_time_seconds = wait_time_seconds
+
+        self._handle: Callable[[Any], Coroutine] = self._get_handler_func()
+
+    def _get_handler_func(self) -> Callable[[Any], Coroutine]:
+        real_handler = self.handler
+        if hasattr(real_handler, "__call__"):
+            real_handler = real_handler.__call__
+
+        if asyncio.iscoroutinefunction(real_handler):
+            return self._handle_async
+
+        return self._handle_sync
 
     async def start(self, stop_event: asyncio.Event) -> Task:
         task = asyncio.create_task(self._handler_loop(stop_event))
@@ -89,12 +101,8 @@ class SqsConsumer:
 
                 await self.queue.remove(message["ReceiptHandle"])
 
-    async def _handle(self, message: Any) -> None:
-        h = self.handler
-        if hasattr(h, "__call__"):
-            h = h.__call__
+    async def _handle_async(self, message: Any) -> None:
+        await self.handler(message)
 
-        if asyncio.iscoroutinefunction(h):
-            await self.handler(message)
-        else:
-            await asyncio.to_thread(self.handler, message)
+    async def _handle_sync(self, message: Any) -> None:
+        await asyncio.to_thread(self.handler, message)
