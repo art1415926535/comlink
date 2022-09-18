@@ -1,5 +1,4 @@
 import asyncio
-import inspect
 import logging
 from asyncio import Task
 from typing import Any, Callable
