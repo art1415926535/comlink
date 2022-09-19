@@ -30,9 +30,20 @@ exclude = '''
 [tool.poetry]
 name = "comlink"
 version = "0.1.0"
-description = ""
-authors = []
+description = "Send and receive messages by using SQS queues."
+authors = ["Artem Fedotov"]
+license = "MIT"
 readme = "README.md"
+packages = [
+    { include = "comlink" },
+]
+
+homepage = "https://github.com/art1415926535/comlink"
+repository = "https://github.com/art1415926535/comlink"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/art1415926535/comlink/issues"
+"Change Log" = "https://github.com/art1415926535/comlink/releases"
 
 [tool.poetry.dependencies]
 python = "^3.10"
