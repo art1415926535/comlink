@@ -1,4 +1,4 @@
-![Comlink logo](./assets/logo.svg)
+![Comlink logo](https://raw.githubusercontent.com/art1415926535/comlink/main/assets/logo.svg)
 
 Send and receive messages by using SQS queues.
 
