@@ -2,6 +2,17 @@
 
 Send and receive messages by using SQS queues.
 
+![PyPI version](https://badge.fury.io/py/comlink.svg)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/comlink)
+![PyPI - License](https://img.shields.io/pypi/l/comlink)
+
+```bash
+pip install comlink
+```
+
+```bash
+poetry add comlink
+```
 
 ## Docs
 ### Example
@@ -33,6 +44,9 @@ async def example(sqs_client, queue_url):
     # Wait for the consumer to stop
     await consumer_task
 ```
+
+More examples can be found in the [examples](https://github.com/art1415926535/comlink/tree/main/examples) directory.
+
 
 ## Development
 
