@@ -29,7 +29,7 @@ exclude = '''
 
 [tool.poetry]
 name = "comlink"
-version = "0.3.0"
+version = "0.3.1"
 description = "Send and receive messages by using SQS queues."
 authors = ["Artem Fedotov"]
 license = "MIT"
