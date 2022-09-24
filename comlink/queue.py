@@ -1,34 +1,23 @@
-from typing import Any, Callable, Generic, Protocol, TypeVar
+from typing import Any, Callable, Generic, TypeVar
 
 
-class Queue(Protocol):
-    async def put(self, data: Any, **kwargs) -> Any:
-        ...
-
-    async def take(self, **kwargs) -> Any:
-        ...
-
-    async def remove(self, **kwargs) -> Any:
-        ...
+Message = TypeVar("Message")
 
 
-MessageType = TypeVar("MessageType")
-
-
-class SqsQueue(Queue, Generic[MessageType]):
+class SqsQueue(Generic[Message]):
     def __init__(
         self,
         url: str,
         client: Any,
-        serializer: Callable[[MessageType], str] | None = None,
-        deserializer: Callable[[str], MessageType] | None = None,
+        serializer: Callable[[Message], str] | None = None,
+        deserializer: Callable[[str], Message] | None = None,
     ):
         self.url = url
         self.client = client
         self.serializer = serializer
         self.deserializer = deserializer
 
-    async def put(self, data: MessageType, **kwargs) -> Any:
+    async def put(self, data: Message, **kwargs) -> Any:
         """Put data into the queue."""
         if self.serializer is not None:
             data = self.serializer(data)
@@ -39,12 +28,11 @@ class SqsQueue(Queue, Generic[MessageType]):
 
     async def take(
         self,
-        /,
         max_messages: int,
         visibility_timeout: int,
         wait_time_seconds: int,
         **kwargs: Any,
-    ) -> list[MessageType]:
+    ) -> list[Message]:
         """Take SQS message from the queue."""
         messages_response = await self.client.receive_message(
             QueueUrl=self.url,
@@ -61,7 +49,7 @@ class SqsQueue(Queue, Generic[MessageType]):
 
         return messages
 
-    async def remove(self, /, receipt_handle: str, **kwargs) -> Any:
+    async def remove(self, receipt_handle: str, **kwargs) -> Any:
         """Remove SQS message from the queue by receipt handle."""
         return await self.client.delete_message(
             QueueUrl=self.url,
