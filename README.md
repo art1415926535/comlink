@@ -17,30 +17,25 @@ poetry add comlink
 ## Example
 
 ```python
-import asyncio
-import datetime
-from comlink import SqsConsumer, SqsQueue
+from comlink import SqsConsumer, SqsQueue, signal_event
 
 
-async def example(sqs_client, queue_url):
+async def example(queue_url, sqs_client):
     # Create a queue object
     sqs_queue = SqsQueue(url=queue_url, client=sqs_client)
 
-    # Event for stopping the consumer
-    stop_event = asyncio.Event()
+    # Event for stopping the consumer by receiving os signal.
+    # stop_event waits for SIGINT(Ctrl+C) or SIGTERM by default
+    stop_event = signal_event()
     # Create a consumer with a handler that just prints the message
     consumer = SqsConsumer(queue=sqs_queue, handler=print)
     # Start the consumer
     consumer_task = await consumer.start(stop_event=stop_event)
 
     # Send a message to the queue
-    await sqs_queue.put(f"{datetime.datetime.now()} Hello, world!")
-    # Wait for 1 second for the message to be processed
-    await asyncio.sleep(1)
+    await sqs_queue.put("Hello, world!")
 
-    # Stop the consumer
-    stop_event.set()
-    # Wait for the consumer to stop
+    # Wait for the consumer to stop by receiving os signal
     await consumer_task
 ```
 
@@ -51,6 +46,8 @@ More examples can be found in the [examples](https://github.com/art1415926535/co
 * [coroutine put(data, **kwargs)](#coroutine-putdata-kwargs)
 * [coroutine take(max_messages, visibility_timeout, wait_time_seconds, **kwargs)](#coroutine-takemax_messages-visibility_timeout-wait_time_seconds-kwargs)
 * [remove(receipt_handle, **kwargs)](#coroutine-removereceipt_handle-kwargs)
+
+<hr>
 
 
 ### `comlink.SqsQueue(url, client, serializer=None, deserializer=None)`
