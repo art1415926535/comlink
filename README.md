@@ -2,9 +2,9 @@
 
 Send and receive messages by using SQS queues.
 
-![PyPI version](https://badge.fury.io/py/comlink.svg)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/comlink)
-![PyPI - License](https://img.shields.io/pypi/l/comlink)
+[![PyPI version](https://badge.fury.io/py/comlink.svg)](https://pypi.org/project/comlink)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/comlink)](https://pypi.org/project/comlink)
+[![PyPI - License](https://img.shields.io/pypi/l/comlink)](https://github.com/art1415926535/comlink/blob/main/LICENSE)
 
 ```bash
 pip install comlink
@@ -47,6 +47,11 @@ async def example(sqs_client, queue_url):
 More examples can be found in the [examples](https://github.com/art1415926535/comlink/tree/main/examples) directory.
 
 ## Docs
+[SqsQueue](#comlinksqsqueueurl-client-serializernone-deserializernone)
+* [coroutine put(data, **kwargs)](#coroutine-putdata-kwargs)
+* [coroutine take(max_messages, visibility_timeout, wait_time_seconds, **kwargs)](#coroutine-takemax_messages-visibility_timeout-wait_time_seconds-kwargs)
+* [remove(receipt_handle, **kwargs)](#coroutine-removereceipt_handle-kwargs)
+
 
 ### `comlink.SqsQueue(url, client, serializer=None, deserializer=None)`
 It is a wrapper around aiobotocore's SQS client. It provides a simple interface for sending and receiving messages.
@@ -99,7 +104,7 @@ Parameters:
 Returns list of messages that were received from the queue.
 <hr>
 
-#### coroutine `remove(receipt_handle: str, **kwargs)`
+#### coroutine `remove(receipt_handle, **kwargs)`
 Deletes the specified message from the queue.  
 Parameters:
 * `receipt_handle: str` - the receipt handle associated with the message to delete (from `take` method)
